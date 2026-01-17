@@ -52,8 +52,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-username/jobsurfing.git
-cd jobsurfing
+git clone https://github.com/likunl-1/job-guide.git
+cd job-guide
 
 # 2. 安装依赖
 pip install -r requirements.txt
@@ -74,10 +74,10 @@ python src/main.py -m http -p 8000
 
 ```bash
 # 1. 构建镜像
-docker build -t jobsurfing .
+docker build -t job-guide .
 
 # 2. 运行容器
-docker run -d -p 8000:8000 --name jobsurfing jobsurfing
+docker run -d -p 8000:8000 --name job-guide job-guide
 
 # 3. 访问
 # 浏览器打开 http://localhost:8000
@@ -88,7 +88,7 @@ docker run -d -p 8000:8000 --name jobsurfing jobsurfing
 ## 📂 项目结构
 
 ```
-jobsurfing/
+job-guide/
 ├── src/                          # 核心源代码
 │   ├── agents/                   # Agent逻辑
 │   │   └── agent.py             # 主Agent实现
