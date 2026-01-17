@@ -16,6 +16,7 @@
 ## 📖 项目简介
 
 本项目是一个基于大语言模型（DeepSeek-v3）的智能就业指导助手，能够为大学生提供个性化的职业规划建议和就业市场分析。
+[就业指导AI Agent详细介绍](assets/documents/introductions/就业指导ai-agent介绍报告.html)
 
 ### 核心价值
 - 🎯 **个性化指导**：根据学生专业、兴趣、技能提供定制化职业规划
@@ -119,7 +120,7 @@ jobsurfing/
 │   ├── resumes/                 # 简历文件
 │   ├── documents/               # 文档资源
 │   └── presentations/           # 演示材料
-│       └── videos/intro/        # 项目介绍视频（需手动上传）
+│       └── videos/intro/        # 项目介绍视频
 │
 ├── docs/                         # 文档
 │   └── quick-start.md           # 快速开始指南
@@ -134,10 +135,11 @@ jobsurfing/
 ## 🎬 功能展示
 
 ### 项目介绍视频
-- [项目演示视频](assets/presentations/videos/intro/project-introduction.mp4) ⭐
+- [项目演示视频](assets/presentations/videos/intro/project-introduction.mov) ⭐
+- 注意：视频文件较大，无法在线查看，需下载查看
 
 ### 招聘信息爬取
-通过自然语言对话，自动爬取前程无忧真实招聘数据：
+使用深层模式搜索时，可通过自然语言对话，自动爬取前程无忧真实招聘数据：
 
 **示例对话**：
 - 用户：帮我爬取北京的Python工程师职位
@@ -183,17 +185,6 @@ jobsurfing/
 
 ---
 
-## 👥 团队成员
-
-| 成员 | 角色 | 负责内容 |
-|------|------|---------|
-| XXX | 组长 | 项目整体规划、核心算法 |
-| XXX | 成员 | 数据获取与处理 |
-| XXX | 成员 | Web前端开发 |
-| XXX | 成员 | 测试与文档 |
-
----
-
 ## 📚 参考文献
 
 1. LangGraph官方文档: https://langchain-ai.github.io/langgraph/
@@ -206,15 +197,15 @@ jobsurfing/
 ## 📝 课程信息
 
 - **课程名称**：人工智能金融
-- **学期**：2024秋季
+- **学期**：2025-2026学年第一学期
 - **小组编号**：第14组
-- **指导老师**：XXX
+- **小组成员**：刘立坤，王陈丽泰
 
 ---
 
 ## 📧 联系方式
 
-如有问题，请联系：your-email@example.com
+如有问题，请联系：15855189065@163.com
 
 ---
 
