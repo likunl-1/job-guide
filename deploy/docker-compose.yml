@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  jobsurfing:
+    build: .
+    container_name: jobsurfing
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      # 需要在.env文件中配置以下环境变量
+      # - COZE_WORKLOAD_IDENTITY_API_KEY=your-api-key
+      # - COZE_INTEGRATION_MODEL_BASE_URL=your-base-url
+    volumes:
+      - ./assets:/app/assets
+      - ./config:/app/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

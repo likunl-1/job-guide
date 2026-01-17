@@ -16,6 +16,7 @@
 ## 📖 项目简介
 
 本项目是一个基于大语言模型（DeepSeek-v3）的智能就业指导助手，能够为大学生提供个性化的职业规划建议和就业市场分析。
+[就业指导AI Agent详细介绍](assets/documents/introductions/就业指导ai-agent介绍报告.html)
 
 ### 核心价值
 - 🎯 **个性化指导**：根据学生专业、兴趣、技能提供定制化职业规划
@@ -51,15 +52,15 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-username/jobsurfing.git
-cd jobsurfing
+git clone https://github.com/likunl-1/job-guide.git
+cd job-guide
 
 # 2. 安装依赖
 pip install -r requirements.txt
 
-# 3. 配置环境变量
+# 3. 配置环境变量（可选）
 cp .env.example .env
-# 编辑 .env 文件，填入必要的 API Key
+# 如使用 Coze 平台，不需要修改 .env 文件
 
 # 4. 启动服务
 python src/main.py -m http -p 8000
@@ -73,10 +74,10 @@ python src/main.py -m http -p 8000
 
 ```bash
 # 1. 构建镜像
-docker build -t jobsurfing .
+docker build -t job-guide .
 
 # 2. 运行容器
-docker run -d -p 8000:8000 --name jobsurfing jobsurfing
+docker run -d -p 8000:8000 --name job-guide job-guide
 
 # 3. 访问
 # 浏览器打开 http://localhost:8000
@@ -87,7 +88,7 @@ docker run -d -p 8000:8000 --name jobsurfing jobsurfing
 ## 📂 项目结构
 
 ```
-jobsurfing/
+job-guide/
 ├── src/                          # 核心源代码
 │   ├── agents/                   # Agent逻辑
 │   │   └── agent.py             # 主Agent实现
@@ -118,15 +119,36 @@ jobsurfing/
 │   ├── jobs_data/               # 爬取的招聘数据
 │   ├── resumes/                 # 简历文件
 │   ├── documents/               # 文档资源
+│   │   ├── introductions/       # 项目介绍文档
+│   │   ├── team/                # 团队文档
+│   │   └── cases/               # 案例文档
 │   └── presentations/           # 演示材料
-│       └── videos/intro/        # 项目介绍视频（需手动上传）
+│       └── videos/intro/        # 项目介绍视频
 │
-├── docs/                         # 文档
-│   └── quick-start.md           # 快速开始指南
+├── docs/                         # 项目文档
+│   ├── quick-start.md           # 快速开始指南
+│   ├── PROJECT_STRUCTURE.md     # 项目结构说明
+│   └── REORGANIZATION_REPORT.md # 重构报告
+│
+├── scripts/                      # 脚本文件
+│   ├── start-web.command        # Mac 启动脚本
+│   ├── start_web.bat            # Windows 启动脚本
+│   └── start_web_quick.bat      # Windows 快速启动
+│
+├── deploy/                       # 部署配置文件
+│   ├── Dockerfile               # Docker 配置
+│   ├── docker-compose.yml       # Docker Compose 配置
+│   ├── .dockerignore            # Docker 忽略文件
+│   ├── Procfile                 # Heroku 配置
+│   ├── railway.toml             # Railway 配置
+│   └── .nixpacks.toml           # Nixpacks 配置
 │
 ├── tests/                        # 测试文件
 ├── requirements.txt              # Python依赖
-└── README.md                     # 项目说明
+├── README.md                     # 项目说明
+├── .gitignore                    # Git 忽略文件
+├── .env.example                  # 环境变量示例
+└── .coze                         # Coze 配置文件
 ```
 
 ---
@@ -134,10 +156,11 @@ jobsurfing/
 ## 🎬 功能展示
 
 ### 项目介绍视频
-- [项目演示视频](assets/presentations/videos/intro/project-introduction.mp4) ⭐
+- [项目演示视频](assets/presentations/videos/intro/project-introduction.mov) ⭐
+- 注意：视频文件较大（91MB），无法在线查看，需下载查看
 
 ### 招聘信息爬取
-通过自然语言对话，自动爬取前程无忧真实招聘数据：
+使用深层模式搜索时，可通过自然语言对话，自动爬取前程无忧真实招聘数据：
 
 **示例对话**：
 - 用户：帮我爬取北京的Python工程师职位
@@ -183,17 +206,6 @@ jobsurfing/
 
 ---
 
-## 👥 团队成员
-
-| 成员 | 角色 | 负责内容 |
-|------|------|---------|
-| XXX | 组长 | 项目整体规划、核心算法 |
-| XXX | 成员 | 数据获取与处理 |
-| XXX | 成员 | Web前端开发 |
-| XXX | 成员 | 测试与文档 |
-
----
-
 ## 📚 参考文献
 
 1. LangGraph官方文档: https://langchain-ai.github.io/langgraph/
@@ -206,7 +218,7 @@ jobsurfing/
 ## 📝 课程信息
 
 - **课程名称**：人工智能金融
-- **学期**：2024秋季
+- **学期**：2025-2026学年第一学期
 - **小组编号**：第14组
 - **指导老师**：XXX
 
@@ -217,7 +229,3 @@ jobsurfing/
 如有问题，请联系：your-email@example.com
 
 ---
-
-## 📄 许可证
-
-MIT License

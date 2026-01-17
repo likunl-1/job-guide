@@ -1,0 +1,29 @@
+# Railway部署配置文件
+# 参考：https://docs.railway.app/reference/ railway
+
+[build]
+builder = "nixpacks"
+
+[build.env]
+PYTHON_VERSION = "3.9"
+
+[[services]]
+name = "web"
+service = "web"
+
+# 服务配置
+[services.web]
+  # 启动命令
+  command = "python src/main.py -m http -p 8000"
+
+  # 健康检查
+  healthcheck_path = "/health"
+  healthcheck_interval = 30
+  healthcheck_timeout = 5
+
+  # 端口
+  port = 8000
+
+# 环境变量
+[vars]
+PYTHONUNBUFFERED = "1"
