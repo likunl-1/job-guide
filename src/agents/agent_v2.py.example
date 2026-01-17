@@ -1,0 +1,216 @@
+"""
+在现有Agent中集成多模式搜索功能的示例
+
+展示如何修改 src/agents/agent.py 以支持可选的数据深度模式
+"""
+
+import os
+import json
+import sys
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
+from coze_coding_utils.runtime_ctx.context import default_headers
+
+# 添加src目录到sys.path
+workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
+src_path = os.path.join(workspace_path, "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
+from utils.helper import graph_helper
+
+# 导入原有工具
+from tools.web_search_tool import search_employment_market, get_employment_trend
+from tools.user_profile_tool import analyze_user_profile, generate_personalized_advice
+
+# ========== 新增：导入多模式搜索工具 ==========
+from tools.multi_mode_search import search_employment_market_v2, guide_user_choice
+# =========================================
+
+LLM_CONFIG = "config/agent_llm_config.json"
+
+in_memory_checkpointer = None
+
+if graph_helper.is_dev_env():
+    in_memory_checkpointer = MemorySaver()
+
+# 更新System Prompt以支持多模式选择
+UPDATED_SYSTEM_PROMPT = """# 角色定义
+你是就业指导专家Agent，专注于帮助大学生和社会新人了解就业市场、分析用工趋势、提供个性化职业建议。
+
+# 任务目标
+你的核心任务是：
+1. 生成具体方向的就业市场报告（如前端开发、数据分析、市场营销等）
+2. 分析用工市场的最新趋势、薪资水平、岗位需求
+3. 根据用户的个人情况（专业、技能、经验、兴趣、地理位置等）生成个性化就业建议
+
+# 能力
+- **就业市场搜索（多模式）**：使用`search_employment_market_v2`工具搜索就业市场信息
+  - 支持**浅层模式**（默认）：快速获取行业报告、趋势分析、市场概况
+  - 支持**深层模式**（可选）：获取真实的招聘数据、具体岗位信息
+- **趋势分析**：使用`get_employment_trend`工具获取特定行业和地区的就业趋势报告
+- **用户画像分析**：使用`analyze_user_profile`工具分析用户提供的个人信息
+- **个性化建议**：使用`generate_personalized_advice`工具结合用户画像和就业市场数据
+- **模式引导**：使用`guide_user_choice`工具帮助用户选择合适的数据模式
+
+# 过程
+1. **需求识别**：首先判断用户的需求类型
+   - 如果用户想了解"趋势"、"前景"、"概况"等 → 使用**浅层模式**
+   - 如果用户想"找工作"、"具体岗位"、"投递简历"等 → 使用**深层模式**
+   - 如果不确定 → 使用`guide_user_choice`工具引导用户
+
+2. **数据获取**：根据需求选择合适的数据模式
+   - 浅层模式：快速获取行业报告和趋势分析
+   - 深层模式：获取真实招聘数据（需要配置API）
+
+3. **分析整合**：分析搜索数据，提取关键信息（薪资范围、需求趋势、技能要求等）
+
+4. **报告生成**：生成结构化的就业市场报告
+
+5. **个性化建议**：结合用户画像，提供针对性的求职策略、技能提升建议
+
+6. **模式切换**：如果用户对当前模式不满意，及时切换到另一种模式
+
+# 数据模式选择指南
+
+## 浅层模式适用场景
+- 了解行业趋势："前端开发就业前景怎么样？"
+- 分析就业市场："2025年IT行业发展趋势如何？"
+- 查薪资调查："AI工程师平均薪资是多少？"
+- 了解技能需求："Python开发工程师技能要求是什么？"
+
+## 深层模式适用场景
+- 找具体工作："北京有哪些公司在招前端开发？"
+- 查真实岗位："腾讯现在有哪些岗位在招？"
+- 查具体薪资："这个岗位具体薪资多少？"
+- 准备投简历："我想找一份10K+的前端工作"
+
+## 模式切换示例
+用户："我想了解前端开发的市场趋势" → 使用浅层模式
+用户："这些信息太宏观了，我想看具体岗位" → 切换到深层模式
+用户："这些岗位不错，但我想再看看整体趋势" → 切换回浅层模式
+
+# 输出格式
+- 根据用户需求，可以输出Markdown格式的详细报告
+- 也可以输出结构化的JSON数据，包含关键指标
+- 确保报告清晰、易读、actionable（可操作）
+- 所有数据来源需注明，保证信息透明度
+- 明确告知用户当前使用的数据模式（浅层/深层）
+
+# 注意事项
+- 优先使用浅层模式，速度快且免费
+- 深层模式需要配置API，如果未配置会提示用户
+- 浅层模式数据来自公开报告，适用于了解趋势
+- 深层模式数据来自真实招聘，适用于求职决策
+- 对不确定的信息要注明"仅供参考"，避免绝对化表述
+- 尊重用户隐私，不要求提供敏感个人信息
+- 鼓励用户结合自身情况做出决策
+"""
+
+def build_agent(ctx=None):
+    """
+    构建并返回就业指导Agent（支持多模式搜索）
+
+    Args:
+        ctx: 上下文对象
+
+    Returns:
+        LangChain Agent实例
+    """
+    workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
+    config_path = os.path.join(workspace_path, LLM_CONFIG)
+
+    # 读取配置文件
+    with open(config_path, 'r', encoding='utf-8') as f:
+        cfg = json.load(f)
+
+    api_key = os.getenv("COZE_WORKLOAD_IDENTITY_API_KEY")
+    base_url = os.getenv("COZE_INTEGRATION_MODEL_BASE_URL")
+
+    # 创建LLM实例
+    llm = ChatOpenAI(
+        model=cfg['config'].get("model", "doubao-seed-1-6-251015"),
+        api_key=api_key,
+        base_url=base_url,
+        temperature=cfg['config'].get('temperature', 0.7),
+        streaming=True,
+        timeout=cfg['config'].get('timeout', 600),
+        extra_body={
+            "thinking": {
+                "type": cfg['config'].get('thinking', 'disabled')
+            }
+        },
+        default_headers=default_headers(ctx) if ctx else {}
+    )
+
+    # 准备工具列表（新增多模式搜索工具）
+    tools = [
+        # 原有工具
+        search_employment_market,  # 保留以兼容旧版本
+        get_employment_trend,
+        analyze_user_profile,
+        generate_personalized_advice,
+
+        # 新增多模式工具
+        search_employment_market_v2,  # 新版本，支持可选数据深度
+        guide_user_choice,           # 引导用户选择模式
+    ]
+
+    # 创建Agent（使用更新后的System Prompt）
+    global in_memory_checkpointer
+    agent = create_agent(
+        model=llm,
+        system_prompt=UPDATED_SYSTEM_PROMPT,  # 使用更新的Prompt
+        tools=tools,
+        checkpointer=in_memory_checkpointer
+    )
+
+    return agent
+
+
+# ========== 使用示例 ==========
+
+def example_usage():
+    """
+    展示多模式搜索的使用示例
+    """
+
+    print("=== 多模式搜索使用示例 ===\n")
+
+    # 示例1：浅层模式（自动选择）
+    print("示例1：用户查询趋势 → 自动使用浅层模式")
+    print("用户：'前端开发的就业前景怎么样？'")
+    print("Agent：自动调用 search_employment_market_v2(query='前端开发', data_depth='shallow')")
+    print("返回：行业趋势分析报告\n")
+
+    # 示例2：深层模式（自动选择）
+    print("示例2：用户找工作 → 自动使用深层模式")
+    print("用户：'我想找北京前端开发的工作'")
+    print("Agent：自动调用 search_employment_market_v2(query='前端开发', data_depth='deep')")
+    print("返回：真实岗位列表\n")
+
+    # 示例3：用户明确指定模式
+    print("示例3：用户明确指定模式")
+    print("用户：'用浅层模式分析AI工程师趋势'")
+    print("Agent：调用 search_employment_market_v2(query='AI工程师', data_depth='shallow')")
+    print("返回：趋势分析报告\n")
+
+    # 示例4：模式切换
+    print("示例4：用户要求切换模式")
+    print("用户：'这些信息太宏观了，我想看具体岗位'")
+    print("Agent：切换到深层模式")
+    print("Agent：调用 search_employment_market_v2(query='前端开发', data_depth='deep')")
+    print("返回：真实岗位列表\n")
+
+    # 示例5：使用引导工具
+    print("示例5：不确定需求时使用引导工具")
+    print("用户：'我想了解前端开发'")
+    print("Agent：调用 guide_user_choice(query='我想了解前端开发')")
+    print("返回：引导用户选择合适模式\n")
+
+    print("=== 所有模式都可选，用户可根据需求自由切换 ===")
+
+
+if __name__ == "__main__":
+    example_usage()

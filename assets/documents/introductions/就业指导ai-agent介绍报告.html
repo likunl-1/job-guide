@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>就业指导 AI Agent | 智能职业规划助手</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+
+    :root {
+      --neon-blue: #00f0ff;
+      --neon-purple: #b967ff;
+      --dark-bg: #0a0a14;
+      --card-bg: rgba(18, 18, 32, 0.6);
+      --text: #e0e0ff;
+      --border-glow: rgba(185, 103, 255, 0.2);
+    }
+
+    .theme-neon {
+      --dark-bg: #050510;
+      --card-bg: rgba(8, 8, 20, 0.85);
+      --text: #ffffff;
+      --border-glow: rgba(100, 200, 255, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text);
+      font-family: 'Noto Sans SC', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      transition: background 0.5s ease;
+      line-height: 1.7;
+    }
+
+    /* 背景粒子网络 */
+    canvas#bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* 主题切换按钮 */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(20, 20, 40, 0.6);
+      border: 1px solid var(--border-glow);
+      color: var(--text);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: rotate(15deg) scale(1.1);
+      box-shadow: 0 0 15px rgba(185, 103, 255, 0.4);
+    }
+
+    /* 导航栏 */
+    nav {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 99;
+      padding: 20px 0;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    nav.scrolled {
+      background: rgba(10, 10, 20, 0.95);
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border-glow);
+    }
+
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 24px;
+      color: var(--neon-blue);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 35px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #a0a0d0;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      font-size: 15px;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--neon-blue);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Hero区域 */
+    header {
+      text-align: center;
+      padding: 180px 0 100px;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      position: relative;
+      letter-spacing: 2px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto 40px;
+      color: #a0a0d0;
+      line-height: 1.8;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: transparent;
+      color: var(--neon-blue);
+      border: 2px solid var(--neon-blue);
+      border-radius: 50px;
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+
+    .hero-btn:hover {
+      background: rgba(0, 240, 255, 0.1);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .hero-btn.primary {
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      color: #0a0a14;
+      border: none;
+    }
+
+    .hero-btn.primary:hover {
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    }
+
+    /* Section通用样式 */
+    section {
+      padding: 100px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .section-title h2 {
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .section-title::after {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+      margin: 0 auto;
+    }
+
+    /* 卡片网格 */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: left;
+      backdrop-filter: blur(10px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple), var(--neon-blue));
+      z-index: -1;
+      border-radius: 18px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(185, 103, 255, 0.5);
+    }
+
+    .card:hover::before {
+      opacity: 0.6;
+    }
+
+    .card:hover p,
+    .card:hover li {
+      color: #e0e8ff;
+    }
+
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(185, 103, 255, 0.2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      border: 1px solid rgba(185, 103, 255, 0.3);
+    }
+
+    .card-icon i {
+      font-size: 28px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .card h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .card p {
+      color: #b0b0d0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .card ul {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .card li {
+      padding: 8px 0;
+      color: #b0b0d0;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .card li i {
+      color: var(--neon-blue);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* 目标人群区域 */
+    #target .card {
+      text-align: center;
+    }
+
+    #target .card-icon {
+      margin: 0 auto 20px;
+    }
+
+    /* 痛点问题 */
+    .pain-card {
+      background: rgba(22, 22, 40, 0.75);
+      border-left: 3px solid var(--neon-purple);
+      border-radius: 12px;
+      padding: 28px;
+      border: 1px solid rgba(185, 103, 255, 0.25);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .pain-card:hover {
+      border-left-width: 5px;
+      transform: translateX(5px);
+      background: rgba(30, 30, 50, 0.85);
+      border-color: rgba(185, 103, 255, 0.4);
+      box-shadow: 0 4px 20px rgba(185, 103, 255, 0.15);
+    }
+
+    .pain-card h3 {
+      color: var(--neon-purple);
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .pain-card p {
+      color: #c0c0e0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .pain-card:hover p {
+      color: #d8d8f0;
+    }
+
+    /* 使用指南时间轴 */
+    .timeline {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple));
+    }
+
+    .timeline-item {
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .timeline-item:nth-child(odd) {
+      padding-right: 50%;
+    }
+
+    .timeline-item:nth-child(even) {
+      padding-left: 50%;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      background: var(--neon-blue);
+      border-radius: 50%;
+      border: 4px solid var(--dark-bg);
+      box-shadow: 0 0 15px var(--neon-blue);
+    }
+
+    .timeline-content {
+      background: var(--card-bg);
+      padding: 28px;
+      border-radius: 12px;
+      border: 1px solid var(--border-glow);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .timeline-content:hover {
+      border-color: var(--neon-blue);
+    }
+
+    .timeline-item:nth-child(odd) .timeline-content {
+      margin-right: 40px;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content {
+      margin-left: 40px;
+    }
+
+    .timeline-content h3 {
+      color: var(--neon-blue);
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .timeline-content p {
+      color: #b0b0d0;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .timeline-content .example {
+      background: rgba(0, 240, 255, 0.08);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 3px solid var(--neon-blue);
+      font-size: 0.88rem;
+      color: #a0a0d0;
+      line-height: 1.7;
+    }
+
+    .timeline-content .example strong {
+      color: var(--neon-purple);
+      font-weight: 600;
+    }
+
+    /* FAQ */
+    .faq-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      margin-bottom: 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-glow);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+    }
+
+    .faq-question {
+      padding: 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .faq-question:hover {
+      background: rgba(185, 103, 255, 0.08);
+    }
+
+    .faq-question h4 {
+      color: var(--text);
+      margin: 0;
+      flex: 1;
+      font-weight: 500;
+      font-size: 1.05rem;
+    }
+
+    .faq-question i {
+      color: var(--neon-blue);
+      transition: transform 0.3s;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: rgba(0, 240, 255, 0.03);
+    }
+
+    .faq-answer p {
+      padding: 24px;
+      margin: 0;
+      color: #b0b0d0;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+    }
+
+    .faq-item.active .faq-question i {
+      transform: rotate(180deg);
+    }
+
+    /* 页脚 */
+    footer {
+      text-align: center;
+      padding: 60px 0 30px;
+      border-top: 1px solid var(--border-glow);
+      background: rgba(8, 8, 16, 0.6);
+    }
+
+    footer p {
+      color: #7070a0;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      .subtitle { font-size: 1rem; }
+      .hero-btn { padding: 14px 30px; font-size: 0.9rem; }
+      .theme-toggle { top: 15px; right: 15px; width: 40px; height: 40px; }
+      .nav-links { display: none; }
+
+      .timeline::before {
+        left: 20px;
+      }
+
+      .timeline-item,
+      .timeline-item:nth-child(odd),
+      .timeline-item:nth-child(even) {
+        padding-left: 50px;
+        padding-right: 0;
+      }
+
+      .timeline-item::before {
+        left: 20px;
+      }
+
+      .timeline-item:nth-child(odd) .timeline-content,
+      .timeline-item:nth-child(even) .timeline-content {
+        margin-left: 30px;
+        margin-right: 0;
+      }
+
+      /* 实现路径响应式 */
+      .arch-component {
+        min-width: 150px !important;
+        padding: 20px !important;
+      }
+
+      .flow-node {
+        min-width: 120px !important;
+        padding: 15px 20px !important;
+      }
+    }
+
+    /* 实现路径特定样式 */
+    .arch-component:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(100, 150, 255, 0.3);
+    }
+
+    .flow-node {
+      transition: all 0.3s ease;
+    }
+
+    .flow-node:hover {
+      transform: scale(1.05);
+    }
+
+    /* 技术栈标签动画 */
+    .card span:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(100, 150, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- 主题切换按钮 -->
+  <div class="theme-toggle" id="themeToggle" title="切换主题">
+    <i class="fas fa-moon"></i>
+  </div>
+
+  <!-- 背景粒子画布 -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- 导航栏 -->
+  <nav id="navbar">
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-robot"></i>
+        <span>CAREER AGENT</span>
+      </div>
+      <div class="nav-links">
+        <a href="#target">目标人群</a>
+        <a href="#problems">痛点问题</a>
+        <a href="#features">功能介绍</a>
+        <a href="#guide">使用指南</a>
+        <a href="#implementation">实现路径</a>
+        <a href="#faq">常见问题</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="container">
+      <h1>就业指导 AI AGENT</h1>
+      <p class="subtitle">基于AI的智能职业规划平台 · 实时市场洞察 · 个性化发展建议 · 数据可视化分析</p>
+      <div class="hero-btns">
+        <a href="#guide" class="hero-btn primary">
+          <i class="fas fa-bolt"></i> 立即体验
+        </a>
+        <a href="#features" class="hero-btn">
+          <i class="fas fa-info-circle"></i> 了解更多
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 目标人群 -->
+  <section id="target">
+    <div class="container">
+      <div class="section-title">
+        <h2>目标人群</h2>
+        <p>为不同阶段的求职者提供定制化服务</p>
+      </div>
+      <div class="features-grid">
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <h3>在校大学生</h3>
+          <p>大三、大四学生，即将步入职场，需要了解就业市场，制定求职计划</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-briefcase"></i>
+          </div>
+          <h3>应届毕业生</h3>
+          <p>刚毕业的求职者，需要精准的求职建议和简历优化指导</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+          <h3>转行求职者</h3>
+          <p>想转行进入新领域，需要了解目标行业的技能要求和就业前景</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>职业规划者</h3>
+          <p>希望了解行业趋势，制定长期职业发展计划的人</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <h3>HR/招聘人员</h3>
+          <p>需要了解行业薪资水平和人才需求趋势的专业人士</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <h3>就业指导老师</h3>
+          <p>高校就业指导老师，需要最新的就业市场数据和趋势分析</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 痛点问题 -->
+  <section id="problems">
+    <div class="container">
+      <div class="section-title">
+        <h2>痛点问题</h2>
+        <p>直击求职痛点，让求职之路更顺畅</p>
+      </div>
+      <div class="features-grid">
+        <div class="pain-card">
+          <h3><i class="fas fa-search"></i> 市场信息不对称</h3>
+          <p>不了解就业市场的真实情况，不知道哪些行业有前景，哪些职位需求量大</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-chart-bar"></i> 薪资水平不清晰</h3>
+          <p>不知道目标职位的市场薪资水平，面试时无法合理期望薪资</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-tools"></i> 技能要求模糊</h3>
+          <p>不清楚职位需要什么技能，不知道应该学习哪些技术才能提高竞争力</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-compass"></i> 求职方向迷茫</h3>
+          <p>有多个职业方向，不知道哪个更适合自己，如何选择</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-sad-tear"></i> 求职焦虑情绪</h3>
+          <p>对经济环境悲观，担心找不到工作，情绪低落，缺乏信心</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-file-alt"></i> 简历优化困难</h3>
+          <p>不知道如何优化简历才能突出优势，提高面试机会</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-trending-down"></i> 行业趋势不明</h3>
+          <p>不知道行业的发展趋势，担心选择的方向未来没前景</p>
+        </div>
+        <div class="pain-card">
+          <h3><i class="fas fa-users"></i> 公司信息匮乏</h3>
+          <p>不了解哪些公司在招聘，不知道目标公司的招聘要求和薪资范围</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 功能介绍 -->
+  <section id="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>核心功能</h2>
+        <p>强大的AI能力，全方位的就业指导</p>
+      </div>
+      <div class="features-grid">
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-search-dollar"></i>
+          </div>
+          <h3>多模式就业搜索</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 浅层模式：快速获取行业报告、趋势分析</li>
+            <li><i class="fas fa-check"></i> 深层模式：获取真实招聘数据和职位详情</li>
+            <li><i class="fas fa-check"></i> 智能模式选择：根据需求自动选择最佳模式</li>
+            <li><i class="fas fa-check"></i> 支持多种搜索：行业、职位、地区、技能</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <h3>用户画像分析</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 多维度分析：专业、技能、经验、兴趣</li>
+            <li><i class="fas fa-check"></i> 识别优势劣势：明确个人竞争力</li>
+            <li><i class="fas fa-check"></i> 匹配岗位推荐：找到最适合的职位</li>
+            <li><i class="fas fa-check"></i> 结构化输出：清晰的个人能力报告</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <h3>个性化建议</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 职位方向推荐：基于个人情况推荐职位</li>
+            <li><i class="fas fa-check"></i> 技能提升路径：制定学习计划</li>
+            <li><i class="fas fa-check"></i> 求职策略指导：面试技巧、薪资谈判</li>
+            <li><i class="fas fa-check"></i> 薪资预期分析：合理的薪资范围建议</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <h3>数据可视化</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 薪资分布图：了解薪资水平分布</li>
+            <li><i class="fas fa-check"></i> 趋势图：查看就业需求变化趋势</li>
+            <li><i class="fas fa-check"></i> 技能需求图：热门技能及占比</li>
+            <li><i class="fas fa-check"></i> 综合分析报告：多维度数据展示</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-cloud"></i>
+          </div>
+          <h3>词云可视化</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 就业市场词云：热门职位和技术关键词</li>
+            <li><i class="fas fa-check"></i> 技能需求词云：职位技能热度展示</li>
+            <li><i class="fas fa-check"></i> 招聘公司词云：热门招聘公司热度</li>
+            <li><i class="fas fa-check"></i> 中英文混合显示：完美支持中文</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h3>心理疏导</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 情绪识别：自动识别消极情绪</li>
+            <li><i class="fas fa-check"></i> 历史案例引导：引用就业周期案例</li>
+            <li><i class="fas fa-check"></i> 建立正确认知：缓解求职焦虑</li>
+            <li><i class="fas fa-check"></i> 正向激励：增强求职信心</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-database"></i>
+          </div>
+          <h3>本地数据分析</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 八爪鱼数据支持：读取采集的招聘数据</li>
+            <li><i class="fas fa-check"></i> 离线分析能力：无需联网也能分析</li>
+            <li><i class="fas fa-check"></i> 批量数据处理：高效分析大量数据</li>
+            <li><i class="fas fa-check"></i> 数据安全可控：本地数据隐私保护</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <i class="fas fa-file-pdf"></i>
+          </div>
+          <h3>简历分析</h3>
+          <ul>
+            <li><i class="fas fa-check"></i> 多格式支持：Word/PDF/TXT/MD</li>
+            <li><i class="fas fa-check"></i> 简历优化建议：提升简历质量</li>
+            <li><i class="fas fa-check"></i> 匹配度分析：与职位要求对比</li>
+            <li><i class="fas fa-check"></i> 提升方向：明确改进点</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用指南 -->
+  <section id="guide">
+    <div class="container">
+      <div class="section-title">
+        <h2>使用指南</h2>
+        <p>简单几步，开启智能求职之旅</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-comment"></i> 第一步：提出需求</h3>
+            <p>直接与AI对话，告诉它你想了解什么</p>
+            <div class="example">
+              <strong>示例：</strong><br>
+              "我想了解前端开发工程师的就业情况"<br>
+              "我是计算机专业大三学生，想做数据分析"<br>
+              "现在经济这么差，能找到工作吗？"
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-heart"></i> 第二步：情绪疏导（如果需要）</h3>
+            <p>AI会识别你的情绪，如有需要会先进行心理疏导</p>
+            <div class="example">
+              <strong>示例：</strong><br>
+              用户："现在经济这么差，我觉得根本找不到工作"<br>
+              AI："我理解你的担忧。让我用历史数据帮你分析一下..."
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-info-circle"></i> 第三步：信息收集</h3>
+            <p>AI会询问你的具体情况，了解你的专业、技能、兴趣等</p>
+            <div class="example">
+              <strong>示例：</strong><br>
+              AI："请问你的专业是什么？有哪些技能？对哪个方向感兴趣？"
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-search"></i> 第四步：数据获取</h3>
+            <p>AI会自动搜索最新的就业市场数据</p>
+            <div class="example">
+              <strong>AI会做什么：</strong><br>
+              - 搜索行业报告和趋势分析<br>
+              - 获取真实招聘数据和职位详情<br>
+              - 分析薪资水平和技能要求
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-chart-bar"></i> 第五步：可视化展示</h3>
+            <p>AI会生成直观的图表和词云，让你更易理解</p>
+            <div class="example">
+              <strong>可视化形式：</strong><br>
+              - 薪资分布图：了解不同薪资区间<br>
+              - 趋势图：查看就业需求变化<br>
+              - 词云图：热门职位和技能热度
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-file-alt"></i> 第六步：生成报告</h3>
+            <p>AI会生成结构化的就业市场报告</p>
+            <div class="example">
+              <strong>报告内容：</strong><br>
+              - 行业现状分析<br>
+              - 薪资水平分析<br>
+              - 技能需求分析<br>
+              - 就业趋势预测
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h3><i class="fas fa-lightbulb"></i> 第七步：个性化建议</h3>
+            <p>结合你的个人情况，提供定制化建议</p>
+            <div class="example">
+              <strong>建议内容：</strong><br>
+              - 推荐职位方向<br>
+              - 技能学习路径<br>
+              - 求职策略指导<br>
+              - 薪资预期建议
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 实现路径 -->
+  <section id="implementation">
+    <div class="container">
+      <div class="section-title">
+        <h2>实现路径</h2>
+        <p>基于LangChain框架的智能Agent架构设计</p>
+      </div>
+
+      <!-- 技术架构 -->
+      <div class="implementation-overview" style="margin-bottom: 60px;">
+        <h3 style="color: var(--neon-blue); font-size: 1.8rem; margin-bottom: 30px; text-align: center; font-family: 'Orbitron', monospace;">
+          <i class="fas fa-cogs" style="margin-right: 15px;"></i>技术架构设计
+        </h3>
+
+        <div class="architecture-diagram" style="background: var(--card-bg); border: 1px solid var(--border-glow); border-radius: 16px; padding: 40px; margin-bottom: 40px; backdrop-filter: blur(10px);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; text-align: center;">
+            <div class="arch-component" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05)); padding: 25px; border-radius: 12px; border: 1px solid rgba(0, 240, 255, 0.3); transition: transform 0.3s;">
+              <i class="fas fa-brain" style="font-size: 36px; color: var(--neon-blue); margin-bottom: 15px;"></i>
+              <h4 style="color: white; margin-bottom: 10px; font-size: 1.1rem;">LLM核心层</h4>
+              <p style="color: #b0b0d0; font-size: 0.9rem;">大语言模型<br/>DeepSeek-v3</p>
+            </div>
+            <div class="arch-component" style="background: linear-gradient(135deg, rgba(185, 103, 255, 0.15), rgba(185, 103, 255, 0.05)); padding: 25px; border-radius: 12px; border: 1px solid rgba(185, 103, 255, 0.3); transition: transform 0.3s;">
+              <i class="fas fa-robot" style="font-size: 36px; color: var(--neon-purple); margin-bottom: 15px;"></i>
+              <h4 style="color: white; margin-bottom: 10px; font-size: 1.1rem;">Agent框架</h4>
+              <p style="color: #b0b0d0; font-size: 0.9rem;">LangChain<br/>create_agent</p>
+            </div>
+            <div class="arch-component" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05)); padding: 25px; border-radius: 12px; border: 1px solid rgba(0, 240, 255, 0.3); transition: transform 0.3s;">
+              <i class="fas fa-tools" style="font-size: 36px; color: var(--neon-blue); margin-bottom: 15px;"></i>
+              <h4 style="color: white; margin-bottom: 10px; font-size: 1.1rem;">工具生态</h4>
+              <p style="color: #b0b0d0; font-size: 0.9rem;">18个专业工具<br/>搜索·分析·可视化</p>
+            </div>
+            <div class="arch-component" style="background: linear-gradient(135deg, rgba(185, 103, 255, 0.15), rgba(185, 103, 255, 0.05)); padding: 25px; border-radius: 12px; border: 1px solid rgba(185, 103, 255, 0.3); transition: transform 0.3s;">
+              <i class="fas fa-memory" style="font-size: 36px; color: var(--neon-purple); margin-bottom: 15px;"></i>
+              <h4 style="color: white; margin-bottom: 10px; font-size: 1.1rem;">记忆系统</h4>
+              <p style="color: #b0b0d0; font-size: 0.9rem;">MemorySaver<br/>20轮上下文</p>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; padding-top: 25px; border-top: 1px solid rgba(100, 100, 150, 0.3);">
+            <p style="color: #a0a0d0; font-size: 0.95rem;">
+              <i class="fas fa-code" style="color: var(--neon-blue); margin-right: 8px;"></i>
+              核心实现：<code style="background: rgba(0, 0, 0, 0.3); padding: 4px 10px; border-radius: 4px; color: var(--neon-blue);">create_agent(model, tools, checkpointer)</code>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心组件详解 -->
+      <div class="implementation-components" style="margin-bottom: 60px;">
+        <h3 style="color: var(--neon-purple); font-size: 1.8rem; margin-bottom: 30px; text-align: center; font-family: 'Orbitron', monospace;">
+          <i class="fas fa-layer-group" style="margin-right: 15px;"></i>核心组件详解
+        </h3>
+
+        <div class="features-grid">
+          <!-- LLM配置 -->
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <h3>LLM配置与训练</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 模型选择：DeepSeek-v3-2-251201</li>
+              <li><i class="fas fa-check"></i> 参数调优：temperature=0.7, top_p=0.9</li>
+              <li><i class="fas fa-check"></i> 推理配置：reasoning_effort=medium</li>
+              <li><i class="fas fa-check"></i> 流式输出：实时响应，提升体验</li>
+              <li><i class="fas fa-check"></i> System Prompt：角色定义、任务边界</li>
+            </ul>
+          </div>
+
+          <!-- 系统提示词 -->
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <h3>系统提示词设计</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 角色定义：就业指导专家Agent</li>
+              <li><i class="fas fa-check"></i> 任务目标：市场分析、个性化建议</li>
+              <li><i class="fas fa-check"></i> 能力边界：明确工具调用范围</li>
+              <li><i class="fas fa-check"></i> 情绪识别：心理疏导与历史案例引导</li>
+              <li><i class="fas fa-check"></i> 输出规范：Markdown格式化报告</li>
+            </ul>
+          </div>
+
+          <!-- 工具体系 -->
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-toolbox"></i>
+            </div>
+            <h3>工具体系架构</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 搜索工具：4个（联网、趋势、本地数据）</li>
+              <li><i class="fas fa-check"></i> 分析工具：2个（画像、个性化建议）</li>
+              <li><i class="fas fa-check"></i> 文件工具：3个（简历读取、文件管理）</li>
+              <li><i class="fas fa-check"></i> 可视化工具：7个（图表、词云）</li>
+              <li><i class="fas fa-check"></i> 报告工具：2个（HTML报告、图表管理）</li>
+            </ul>
+          </div>
+
+          <!-- 记忆机制 -->
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3>记忆机制设计</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 滑动窗口：保留最近20轮对话</li>
+              <li><i class="fas fa-check"></i> 上下文管理：40条消息上限</li>
+              <li><i class="fas fa-check"></i> Checkpointer：LangGraph MemorySaver</li>
+              <li><i class="fas fa-check"></i> 环境判断：开发环境启用记忆</li>
+              <li><i class="fas fa-check"></i> 会话隔离：支持多用户并发</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据流程 -->
+      <div class="implementation-flow" style="margin-bottom: 60px;">
+        <h3 style="color: var(--neon-blue); font-size: 1.8rem; margin-bottom: 30px; text-align: center; font-family: 'Orbitron', monospace;">
+          <i class="fas fa-project-diagram" style="margin-right: 15px;"></i>数据流程设计
+        </h3>
+
+        <div style="background: var(--card-bg); border: 1px solid var(--border-glow); border-radius: 16px; padding: 40px; backdrop-filter: blur(10px);">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0; margin-bottom: 40px;">
+            <!-- 流程节点 -->
+            <div class="flow-node" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05)); padding: 20px 30px; border-radius: 12px; border: 2px solid var(--neon-blue); text-align: center; min-width: 180px;">
+              <i class="fas fa-user" style="font-size: 28px; color: var(--neon-blue); margin-bottom: 10px;"></i>
+              <p style="color: white; font-weight: 600; margin: 0;">用户输入</p>
+            </div>
+            <div style="color: var(--neon-blue); font-size: 24px;">→</div>
+            <div class="flow-node" style="background: linear-gradient(135deg, rgba(185, 103, 255, 0.2), rgba(185, 103, 255, 0.05)); padding: 20px 30px; border-radius: 12px; border: 2px solid var(--neon-purple); text-align: center; min-width: 180px;">
+              <i class="fas fa-robot" style="font-size: 28px; color: var(--neon-purple); margin-bottom: 10px;"></i>
+              <p style="color: white; font-weight: 600; margin: 0;">Agent判断</p>
+            </div>
+            <div style="color: var(--neon-purple); font-size: 24px;">→</div>
+            <div class="flow-node" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05)); padding: 20px 30px; border-radius: 12px; border: 2px solid var(--neon-blue); text-align: center; min-width: 180px;">
+              <i class="fas fa-tools" style="font-size: 28px; color: var(--neon-blue); margin-bottom: 10px;"></i>
+              <p style="color: white; font-weight: 600; margin: 0;">工具调用</p>
+            </div>
+            <div style="color: var(--neon-blue); font-size: 24px;">→</div>
+            <div class="flow-node" style="background: linear-gradient(135deg, rgba(185, 103, 255, 0.2), rgba(185, 103, 255, 0.05)); padding: 20px 30px; border-radius: 12px; border: 2px solid var(--neon-purple); text-align: center; min-width: 180px;">
+              <i class="fas fa-cogs" style="font-size: 28px; color: var(--neon-purple); margin-bottom: 10px;"></i>
+              <p style="color: white; font-weight: 600; margin: 0;">结果整合</p>
+            </div>
+            <div style="color: var(--neon-purple); font-size: 24px;">→</div>
+            <div class="flow-node" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05)); padding: 20px 30px; border-radius: 12px; border: 2px solid var(--neon-blue); text-align: center; min-width: 180px;">
+              <i class="fas fa-stream" style="font-size: 28px; color: var(--neon-blue); margin-bottom: 10px;"></i>
+              <p style="color: white; font-weight: 600; margin: 0;">流式输出</p>
+            </div>
+          </div>
+
+          <div style="background: rgba(0, 0, 0, 0.3); padding: 25px; border-radius: 10px; border-left: 3px solid var(--neon-blue);">
+            <h4 style="color: var(--neon-blue); margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-info-circle" style="margin-right: 10px;"></i>流程说明</h4>
+            <ul style="color: #b0b0d0; font-size: 0.95rem; line-height: 1.8; padding-left: 20px;">
+              <li><strong style="color: var(--neon-purple);">Agent判断</strong>：根据用户输入，智能选择合适的工具或直接回答</li>
+              <li><strong style="color: var(--neon-blue);">工具调用</strong>：18个工具协同工作，支持并行调用和链式调用</li>
+              <li><strong style="color: var(--neon-purple);">结果整合</strong>：多源数据融合，生成结构化分析报告</li>
+              <li><strong style="color: var(--neon-blue);">流式输出</strong>：实时返回生成结果，提升用户等待体验</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 部署架构 -->
+      <div class="implementation-deployment">
+        <h3 style="color: var(--neon-purple); font-size: 1.8rem; margin-bottom: 30px; text-align: center; font-family: 'Orbitron', monospace;">
+          <i class="fas fa-server" style="margin-right: 15px;"></i>部署架构设计
+        </h3>
+
+        <div class="features-grid">
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-code-branch"></i>
+            </div>
+            <h3>代码管理</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 版本控制：Git + Gitee</li>
+              <li><i class="fas fa-check"></i> 分支管理：功能分支开发流程</li>
+              <li><i class="fas fa-check"></i> 协作开发：支持多人并行开发</li>
+              <li><i class="fas fa-check"></i> 代码审查：Pull Request机制</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-server"></i>
+            </div>
+            <h3>本地测试</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> 框架：FastAPI + uvicorn</li>
+              <li><i class="fas fa-check"></i> 调试：直接运行Agent或HTTP服务</li>
+              <li><i class="fas fa-check"></i> 配置：环境变量管理</li>
+              <li><i class="fas fa-check"></i> 日志：完整的错误追踪</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>云端部署</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> Railway：一键部署，自动扩缩容</li>
+              <li><i class="fas fa-check"></i> 云服务器：阿里云/腾讯云/华为云</li>
+              <li><i class="fas fa-check"></i> ngrok：临时外网访问</li>
+              <li><i class="fas fa-check"></i> 容器化：Docker支持（预留）</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <i class="fas fa-globe"></i>
+            </div>
+            <h3>Web服务</h3>
+            <ul>
+              <li><i class="fas fa-check"></i> API接口：RESTful设计</li>
+              <li><i class="fas fa-check"></i> 前端界面：原生HTML/CSS/JS</li>
+              <li><i class="fas fa-check"></i> 实时对话：WebSocket支持（预留）</li>
+              <li><i class="fas fa-check"></i> 流式响应：Server-Sent Events</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 技术栈总览 -->
+      <div style="margin-top: 60px; background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(185, 103, 255, 0.1)); padding: 40px; border-radius: 16px; border: 1px solid var(--border-glow);">
+        <h3 style="color: var(--neon-blue); text-align: center; margin-bottom: 30px; font-family: 'Orbitron', monospace; font-size: 1.5rem;">
+          <i class="fas fa-layer-stack" style="margin-right: 12px;"></i>技术栈总览
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">AI框架</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">LangChain</span>
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">LangGraph</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">大模型</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">DeepSeek-v3</span>
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">OpenAI API</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">后端框架</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">FastAPI</span>
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">uvicorn</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">数据处理</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">Matplotlib</span>
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">Seaborn</span>
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">WordCloud</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">文件解析</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">python-docx</span>
+              <span style="background: rgba(0, 240, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">pdfplumber</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <h4 style="color: var(--neon-purple); margin-bottom: 15px; font-size: 1.1rem;">前端技术</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">HTML5</span>
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">CSS3</span>
+              <span style="background: rgba(185, 103, 255, 0.15); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; color: white;">JavaScript</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="section-title">
+        <h2>常见问题</h2>
+        <p>解答你的疑惑</p>
+      </div>
+      <div class="faq-container">
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：这个AI Agent是免费的吗？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：是的，这个就业指导AI Agent完全免费使用。你可以随时提问，获取就业市场分析、个性化建议等服务。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：AI提供的数据准确吗？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：AI的数据来源于多个权威渠道，包括智联招聘、猎聘、Boss直聘等招聘平台，以及各大研究机构发布的就业报告。我们会定期更新数据，确保信息的时效性和准确性。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：生成的词云图和图表可以下载吗？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：可以！所有生成的词云图和图表都以PNG高清格式保存在系统中，你可以直接下载查看和分享。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：AI能分析我的简历吗？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：可以！AI支持分析Word、PDF、TXT、MD等多种格式的简历文件，会根据职位要求分析你的简历，提供优化建议和提升方向。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：浅层模式和深层模式有什么区别？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：浅层模式适合快速了解行业整体情况，提供行业报告和趋势分析，响应速度快；深层模式适合需要具体职位信息时使用，会获取真实的招聘数据、职位详情和薪资信息，数据更详细。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：如何开始使用？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：很简单！只需要直接与AI对话，告诉它你想了解什么即可。例如："我想了解前端开发工程师的就业情况"，AI就会开始为你提供服务。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：AI能识别我的情绪吗？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：可以！AI具备情绪识别能力，会识别你的消极情绪和对经济的悲观预期，并通过历史案例进行心理疏导，帮助你建立正确的经济周期认知，缓解求职焦虑。</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">
+            <h4>Q：支持哪些行业和职位的分析？</h4>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-answer">
+            <p>A：AI支持几乎所有行业和职位的分析，包括但不限于：互联网、金融、教育、医疗、制造业、服务业等。无论是技术类职位（如程序员、数据分析师）还是非技术类职位（如产品经理、市场营销），AI都能提供分析。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 就业指导 AI Agent - 智能职业规划助手</p>
+      <p>基于AI的智能就业指导 · 实时市场洞察 · 个性化建议</p>
+    </div>
+  </footer>
+
+  <!-- 主题切换 JS -->
+  <script>
+    const themeToggle = document.getElementById("themeToggle");
+    const body = document.body;
+    const icon = themeToggle.querySelector("i");
+
+    // 检查本地存储的主题偏好
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    if (savedTheme === "neon") {
+      body.classList.add("theme-neon");
+      icon.className = "fas fa-sun";
+    }
+
+    themeToggle.addEventListener("click", () => {
+      body.classList.toggle("theme-neon");
+      const isNeon = body.classList.contains("theme-neon");
+      icon.className = isNeon ? "fas fa-sun" : "fas fa-moon";
+      localStorage.setItem("theme", isNeon ? "neon" : "dark");
+    });
+  </script>
+
+  <!-- 导航栏滚动效果 -->
+  <script>
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+  </script>
+
+  <!-- 平滑滚动 -->
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+
+  <!-- FAQ折叠功能 -->
+  <script>
+    document.querySelectorAll('.faq-question').forEach(item => {
+      item.addEventListener('click', () => {
+        const faqItem = item.parentElement;
+        const isActive = faqItem.classList.contains('active');
+        
+        // 关闭其他所有FAQ
+        document.querySelectorAll('.faq-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        
+        // 切换当前FAQ
+        if (!isActive) {
+          faqItem.classList.add('active');
+        }
+      });
+    });
+  </script>
+
+  <!-- 背景粒子 JS -->
+  <script>
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const particleCount = Math.min(80, Math.floor(window.innerWidth / 12));
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.8 - 0.4;
+        this.speedY = Math.random() * 0.8 - 0.4;
+        this.color = `rgba(${Math.floor(Math.random()*50)}, ${Math.floor(Math.random()*100+150)}, ${Math.floor(Math.random()*255)}, ${Math.random()*0.4+0.1})`;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+        if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(10, 10, 20, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        for (let j = i; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(100, 150, 255, ${0.15 - distance/800})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+
+</body>
+</html>

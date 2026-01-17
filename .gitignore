@@ -1,0 +1,91 @@
+# Python缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# IDE配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 日志文件
+*.log
+logs/
+*.log.*
+
+# 测试覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# 构建产物
+dist/
+build/
+*.egg-info/
+*.egg
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# 项目特定的
+jobsurfing*.tar.gz
+jobsurfing-temp/
+
+# 数据文件
+assets/*.csv
+assets/*.xlsx
+assets/*.json
+!assets/*.example.*
+
+# 生成的测试报告
+assets/reports/test_*.html
+assets/reports/*test*.html
+
+# 用户上传的数据
+assets/data/user-uploads/
+assets/jobs_data/*.xlsx
+!assets/jobs_data/example_*.xlsx
+assets/resumes/*
+!assets/resumes/example_*.txt
+
+# 生成的图表（可选，根据需要注释）
+# assets/charts/*.png
+# assets/charts/*.jpg
+
+# 缓存
+.cache/
+*.cache
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 临时下载
+/tmp/

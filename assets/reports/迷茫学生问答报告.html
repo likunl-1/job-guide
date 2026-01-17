@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>迷茫学生职业规划报告 - 就业指导 AI Agent</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- ECharts 图表库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+  <!-- WordCloud2 词云库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+  <!-- Marked Markdown解析库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+
+    :root {
+      --neon-blue: #00f0ff;
+      --neon-purple: #b967ff;
+      --dark-bg: #0a0a14;
+      --card-bg: rgba(18, 18, 32, 0.7);
+      --text: #e0e0ff;
+      --border-glow: rgba(185, 103, 255, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text);
+      font-family: 'Noto Sans SC', sans-serif;
+      line-height: 1.8;
+      padding: 20px;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(185, 103, 255, 0.05) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    .report-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 报告头部 */
+    .report-header {
+      text-align: center;
+      padding: 60px 0 40px;
+      border-bottom: 2px solid var(--border-glow);
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+    }
+
+    .report-header h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .report-meta {
+      color: #a0a0d0;
+      font-size: 0.95rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .report-meta span {
+      margin: 0 20px;
+    }
+
+    /* 章节 */
+    .section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
+    }
+
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .section:hover::before {
+      opacity: 1;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      color: var(--neon-blue);
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--neon-purple);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .section-title i {
+      font-size: 1.5rem;
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* 用户画像 */
+    .user-profile {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .profile-item {
+      background: rgba(30, 30, 50, 0.6);
+      padding: 24px;
+      border-radius: 12px;
+      border-left: 3px solid var(--neon-blue);
+      transition: all 0.3s ease;
+    }
+
+    .profile-item:hover {
+      background: rgba(40, 40, 60, 0.7);
+      border-left-width: 5px;
+      transform: translateX(5px);
+    }
+
+    .profile-item h4 {
+      color: var(--neon-blue);
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .profile-item p {
+      color: #c0c0e0;
+      font-size: 0.95rem;
+    }
+
+    /* 数据卡片 */
+    .data-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .data-card {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(185, 103, 255, 0.1));
+      border: 1px solid rgba(185, 103, 255, 0.3);
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .data-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--neon-blue);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.2);
+    }
+
+    .data-card .value {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .data-card .label {
+      color: #a0a0d0;
+      font-size: 0.95rem;
+    }
+
+    /* 图表容器 */
+    .chart-container {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    .chart-title {
+      color: #c0c0e0;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .chart-box {
+      width: 100%;
+      height: 400px;
+      position: relative;
+    }
+
+    /* 词云 */
+    .wordcloud-container {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    #wordcloud {
+      width: 100%;
+      height: 400px;
+      position: relative;
+    }
+
+    /* 建议 */
+    .recommendation-list {
+      list-style: none;
+    }
+
+    .recommendation-list li {
+      background: rgba(30, 30, 50, 0.5);
+      margin-bottom: 16px;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid var(--neon-purple);
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .recommendation-list li:hover {
+      background: rgba(40, 40, 60, 0.6);
+      border-left-width: 6px;
+      transform: translateX(5px);
+    }
+
+    .recommendation-list li i {
+      color: var(--neon-purple);
+      font-size: 1.3rem;
+      margin-top: 3px;
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+
+    .recommendation-content h5 {
+      color: var(--neon-blue);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .recommendation-content p {
+      color: #c0c0e0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* 心理疏导 */
+    .counseling-box {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(185, 103, 255, 0.08));
+      border: 2px solid rgba(185, 103, 255, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .counseling-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 50%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .counseling-box i {
+      font-size: 3rem;
+      color: var(--neon-purple);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .counseling-box h4 {
+      color: var(--neon-blue);
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .counseling-box p {
+      color: #c0c0e0;
+      font-size: 1rem;
+      line-height: 1.8;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* 对话记录 */
+    .chat-record {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    /* Markdown内容样式 */
+    .section-content {
+      color: #c0c0e0;
+      line-height: 1.9;
+    }
+
+    .section-content h2 {
+      color: var(--neon-blue);
+      font-size: 1.5rem;
+      margin: 24px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(185, 103, 255, 0.3);
+    }
+
+    .section-content h3 {
+      color: var(--neon-purple);
+      font-size: 1.3rem;
+      margin: 20px 0 12px;
+    }
+
+    .section-content h4 {
+      color: #e0e0ff;
+      font-size: 1.1rem;
+      margin: 16px 0 10px;
+    }
+
+    .section-content p {
+      margin-bottom: 12px;
+    }
+
+    .section-content ul, .section-content ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    .section-content li {
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+
+    .section-content ul {
+      list-style-type: disc;
+    }
+
+    .section-content ol {
+      list-style-type: decimal;
+    }
+
+    .section-content strong {
+      color: var(--neon-blue);
+      font-weight: 600;
+    }
+
+    .section-content em {
+      color: var(--neon-purple);
+      font-style: italic;
+    }
+
+    .section-content code {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--neon-blue);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .section-content pre {
+      background: rgba(10, 10, 20, 0.9);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    .section-content pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .section-content blockquote {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(185, 103, 255, 0.08));
+      border-left: 4px solid var(--neon-blue);
+      padding: 16px 20px;
+      margin: 16px 0;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+    }
+
+    .section-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      background: rgba(10, 10, 20, 0.6);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-content th {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--neon-blue);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .section-content td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+    }
+
+    .section-content tr:hover {
+      background: rgba(0, 240, 255, 0.05);
+    }
+
+    .section-content hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(185, 103, 255, 0.3), transparent);
+      margin: 24px 0;
+    }
+
+    /* 对话记录 */
+    .chat-record {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    .chat-message {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chat-message.user {
+      flex-direction: row-reverse;
+    }
+
+    .chat-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .chat-message.ai .chat-avatar {
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      animation: avatarGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes avatarGlow {
+      0%, 100% { box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3); }
+      50% { box-shadow: 0 4px 25px rgba(0, 240, 255, 0.6); }
+    }
+
+    .chat-message.user .chat-avatar {
+      background: rgba(48, 54, 61, 0.8);
+      border: 2px solid var(--neon-purple);
+    }
+
+    .chat-content {
+      max-width: 75%;
+      padding: 16px 20px;
+      border-radius: 16px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .chat-message.ai .chat-content {
+      background: rgba(185, 103, 255, 0.15);
+      border: 1px solid rgba(185, 103, 255, 0.3);
+    }
+
+    .chat-message.user .chat-content {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    /* 技能进度条 */
+    .skill-bar {
+      margin-bottom: 24px;
+    }
+
+    .skill-bar-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .skill-bar-header span:first-child {
+      color: #c0c0e0;
+      font-weight: 500;
+    }
+
+    .skill-bar-header span:last-child {
+      color: var(--neon-blue);
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+    }
+
+    .skill-bar-track {
+      height: 12px;
+      background: rgba(48, 54, 61, 0.8);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      border-radius: 6px;
+      transition: width 1.5s ease-out;
+      position: relative;
+    }
+
+    .skill-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* 时间轴 */
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple));
+    }
+
+    .timeline-item {
+      margin-bottom: 24px;
+      position: relative;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      background: var(--neon-blue);
+      border-radius: 50%;
+      border: 3px solid var(--dark-bg);
+      box-shadow: 0 0 10px var(--neon-blue);
+      animation: timelinePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes timelinePulse {
+      0%, 100% { box-shadow: 0 0 10px var(--neon-blue); }
+      50% { box-shadow: 0 0 20px var(--neon-blue), 0 0 30px rgba(0, 240, 255, 0.5); }
+    }
+
+    .timeline-item h5 {
+      color: var(--neon-purple);
+      font-size: 1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .timeline-item p {
+      color: #b0b0d0;
+      font-size: 0.92rem;
+      white-space: pre-wrap;
+    }
+
+    /* 页脚 */
+    .report-footer {
+      text-align: center;
+      padding: 40px 0;
+      color: #7070a0;
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border-glow);
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .report-header h1 {
+        font-size: 2rem;
+      }
+      .section {
+        padding: 24px;
+      }
+      .user-profile {
+        grid-template-columns: 1fr;
+      }
+      .report-meta span {
+        display: block;
+        margin: 8px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <!-- 报告头部 -->
+    <div class="report-header">
+      <h1><i class="fas fa-compass"></i> 迷茫学生职业规划报告</h1>
+      <div class="report-meta">
+        <span><i class="fas fa-user"></i> 用户：张同学</span>
+        <span><i class="fas fa-calendar"></i> 报告时间：2026年01月</span>
+        <span><i class="fas fa-map-marker-alt"></i> 当前状态：迷茫困惑</span>
+      </div>
+    </div>
+
+    <!-- 用户画像 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-user-circle"></i> 用户画像分析
+      </div>
+      <div class="user-profile">
+        <div class="profile-item">
+          <h4><i class="fas fa-graduation-cap"></i> 教育背景</h4>
+          <p>211财经院校 金融学院 研一学生，金融学</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-chart-line"></i> 学业表现</h4>
+          <p>班级前30%</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-code"></i> 技能水平</h4>
+          <p>Python基础, 金融学, 统计学, 会计学</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-bullseye"></i> 职业诉求</h4>
+          <p>工作稳定，薪资适中，生活平衡</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 关键数据 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-chart-bar"></i> 关键数据概览
+      </div>
+      <div class="data-cards">
+        <div class="data-card">
+          <div class="value">65%</div>
+          <div class="label">银行岗位成功率</div>
+        </div>
+        <div class="data-card">
+          <div class="value">18k+</div>
+          <div class="label">银行平均起薪</div>
+        </div>
+        <div class="data-card">
+          <div class="value">75%</div>
+          <div class="label">企业财务成功率</div>
+        </div>
+        <div class="data-card">
+          <div class="value">85%</div>
+          <div class="label">你的匹配度</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 就业市场分析 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-chart-line"></i> 就业市场分析
+      </div>
+      <div class="section-content" id="employment-analysis">
+        <!-- Markdown内容将通过JS动态渲染 -->
+      </div>
+    </div>
+
+    <!-- 推荐建议 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-lightbulb"></i> 个性化建议
+      </div>
+      <div class="section-content" id="recommendations">
+        <!-- Markdown内容将通过JS动态渲染 -->
+      </div>
+    </div>
+
+    <!-- 行动计划 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-tasks"></i> 行动计划
+      </div>
+      <div class="section-content" id="action-plan">
+        <!-- Markdown内容将通过JS动态渲染 -->
+      </div>
+    </div>
+
+    <!-- 总结与鼓励 -->
+    <div class="section" style="text-align: center; background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(185, 103, 255, 0.08));">
+      <i class="fas fa-rocket" style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 20px;"></i>
+      <h3 style="color: var(--neon-purple); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Orbitron', monospace;">总结与鼓励</h3>
+      <p style="color: #c0c0e0; font-size: 1.1rem; line-height: 1.9; max-width: 800px; margin: 0 auto;">
+        亲爱的同学，通过这次深度分析，我们已经为你明确了前进的方向。
+        <br><br>
+        <strong>记住：迷茫是暂时的，行动是最好的解药！</strong>
+        <br><br>
+        按照这份行动计划一步步执行，你一定能找到理想的工作！
+        <br><br>
+        <strong>加油，未来可期！💪</strong>
+      </p>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="report-footer">
+      <p>本报告由就业指导 AI Agent 自动生成</p>
+      <p>基于深度对话 + 市场数据 + 个性化分析 | 报告生成时间：2026年01月</p>
+      <p style="margin-top: 10px;">⚠️ 本报告仅供参考，最终决定权在你手中，建议结合实际情况综合考虑</p>
+    </div>
+  </div>
+
+  <script>
+    // 存储Markdown内容
+    const employmentAnalysisMarkdown = `\n## 当前金融行业就业形势分析\n\n### 一、整体市场概况\n\n根据2024-2025年金融行业招聘数据分析：\n\n- **就业总体态势**：金融行业招聘需求呈现结构化特征\n- **竞争程度**：一线城市竞争激烈，二三线城市机会较多\n- **薪资水平**：硕士毕业生平均起薪18-22k/月\n\n### 二、不同方向的就业情况\n\n#### 1. 商业银行\n- **招聘规模**：⭐⭐⭐⭐⭐ 非常大\n- **稳定性**：⭐⭐⭐⭐⭐ 高度稳定\n- **薪资水平**：15-20k（起薪），22-28k（3年后）\n- **适合人群**：追求稳定、重视工作生活平衡的学生\n- **竞争程度**：中等\n\n#### 2. 券商投行\n- **招聘规模**：⭐⭐ 较小\n- **稳定性**：⭐⭐ 波动较大\n- **薪资水平**：25-35k（起薪），40-60k（3年后）\n- **适合人群**：抗压能力强、追求高回报的学生\n- **竞争程度**：极度激烈\n\n#### 3. 企业财务/会计\n- **招聘规模**：⭐⭐⭐⭐ 较大\n- **稳定性**：⭐⭐⭐⭐⭐ 高度稳定\n- **薪资水平**：12-15k（起薪），18-25k（3年后）\n- **适合人群**：注重工作稳定性的学生\n- **竞争程度**：较低\n\n### 三、针对你的情况分析\n\n根据你的个人特点：\n- ✅ 学术基础扎实（成绩前30%）\n- ✅ 金融学、会计学基础良好\n- ✅ 追求稳定而非高风险\n- ⚠️ 量化能力一般\n\n**最佳匹配方向：商业银行 > 企业财务 > 其他方向**\n\n> 💡 **关键洞察**：从投资回报率角度考虑，直接就业比读博更有优势。提前3年获得收入，积累的经验价值远超过学历提升带来的额外收益。\n`;
+    const recommendationsMarkdown = `\n## 个性化职业发展建议\n\n### 第一部分：短期建议（6个月内）\n\n#### 1. 技能提升计划\n\n| 技能类别 | 具体内容 | 重要程度 | 时间投入 |\n|---------|---------|---------|---------|\n| 数据分析 | Excel高级函数、Python数据分析库 | ⭐⭐⭐⭐⭐ | 3个月 |\n| 财务分析 | 三大财务报表分析、财务指标计算 | ⭐⭐⭐⭐⭐ | 2个月 |\n| 沟通表达 | 项目展示、职场沟通技巧 | ⭐⭐⭐⭐ | 持续 |\n| 量化建模 | 基础统计模型、机器学习入门 | ⭐⭐ | 1个月（可选） |\n\n#### 2. 实践经历积累\n\n- **目标**：获得1-2份高质量的金融相关实习经历\n- **方向优先级**：\n  1. 商业银行（管培生、运营、风控）\n  2. 大中型企业财务部\n  3. 金融科技公司数据分析岗\n- **关键收获**：了解真实工作内容，建立行业人脉\n\n### 第二部分：中长期建议（1-2年）\n\n#### 职业发展路径规划\n\n**路径A：商业银行方向（推荐）**\n\`\`\`\n入职初期（0-1年）→ 基础岗位学习\n成长期（1-3年）→ 业务骨干\n发展期（3-5年）→ 团队主管/业务专家\n成熟期（5年以上）→ 部门经理/更高职位\n\`\`\`\n\n**路径B：企业财务方向（备选）**\n\`\`\`\n入职初期（0-1年）→ 财务专员\n成长期（1-3年）→ 财务主管\n发展期（3-5年）→ 财务经理\n成熟期（5年以上）→ 财务总监\n\`\`\`\n\n#### 持续学习建议\n\n**必学证书**：\n- CFA一级（提升专业认可度）\n- FRM一级（风险管理知识）\n- 会计从业资格\n\n**可选证书**：\n- CPA注册会计师（时间成本高，视情况决定）\n- 金融科技相关认证\n\n### 第三部分：避坑指南\n\n⚠️ **避免的错误选择**：\n\n1. **不要盲目追求高薪高压岗位**\n   - 投行、量化等岗位虽然薪资高，但压力极大，工作生活平衡差\n   - 与你\"追求稳定\"的诉求不符\n\n2. **不要在不感兴趣的学术方向投入过多**\n   - 读博需要极强的研究兴趣和抗压能力\n   - 延期毕业风险高，机会成本大\n\n3. **不要忽视实习的重要性**\n   - 实习是最好的试错方式\n   - 帮助你确认是否喜欢这个行业\n\n4. **不要过度依赖\"名校光环\"**\n   - 学历只是敲门砖，实际能力和经验更重要\n   - 面试官更看重解决问题的能力\n\n### 第四部分：心理建设\n\n✨ **保持积极心态**\n\n> \"没有完美的选择，只有最适合你的选择。\"\n\n- **接受迷茫**：这是成长过程中的正常现象\n- **小步快跑**：通过实际行动不断调整方向\n- **多交流学习**：向学长学姐、老师请教\n- **保持开放**：对新事物保持好奇心\n\n📌 **关键成功因素**\n\n1. 明确自己的核心价值观（稳定 vs 高收益）\n2. 选择与价值观匹配的职业路径\n3. 制定详细的行动计划并严格执行\n4. 定期回顾和调整，保持灵活性\n`;
+    const actionPlanMarkdown = `\n## 具体行动计划时间表\n\n### 📅 第一阶段：研一下学期（3月-6月）\n**目标：明确方向 + 技能强化**\n\n#### 3月：方向确定\n- [x] 完成《就业市场分析报告》\n- [x] 确定商业银行为主要目标方向\n- [x] 制定个人学习计划表\n\n#### 4-5月：技能提升\n\`\`\`python\n# 4月学习任务\napril_tasks = {\n    \"Week 1-2\": \"学习Excel VLOOKUP, PivotTable高级功能\",\n    \"Week 3-4\": \"完成第一个财务分析项目（某上市公司财报分析）\"\n}\n\n# 5月学习任务\nmay_tasks = {\n    \"Week 1-2\": \"Python数据分析基础（Pandas, NumPy）\",\n    \"Week 3-4\": \"完成第二个数据分析项目（行业数据分析）\"\n}\n\`\`\`\n\n#### 6月：实习准备\n- [ ] 完善个人简历\n- [ ] 准备面试常见问题库\n- [ ] 开始投递暑期实习岗位\n\n### 📅 第二阶段：暑期（7月-8月）\n**目标：实习实战 + 经验积累**\n\n#### 7月：入职实习\n- [ ] 快速适应工作环境\n- [ ] 学习岗位所需技能\n- [ ] 主动承担工作任务\n\n#### 8月：实习总结\n- [ ] 整理实习收获和经验\n- [ ] 获取实习导师的推荐信\n- [ ] 评估自己是否适合这个行业\n\n### 📅 第三阶段：研二上学期（9月-12月）\n**目标：秋招准备 + Offer获取**\n\n#### 9-10月：简历完善\n- [ ] 将实习经历加入简历\n- [ ] 突出2个项目的成果\n- [ ] 请老师/学长帮忙修改简历\n\n#### 10-11月：秋招投递\n- [ ] 关注各大银行招聘信息\n- [ ] 参加校园招聘宣讲会\n- [ ] 批量投递简历（目标50+）\n\n#### 11-12月：面试准备\n- [ ] 准备面试常见问题\n- [ ] 模拟面试练习\n- [ ] 参加实际面试\n\n### 📅 第四阶段：研二下学期（1月-6月）\n**目标：Offer对比 + 最终决策**\n\n#### 1-3月：春招冲刺\n- [ ] 继续投递简历\n- [ ] 参加面试\n- [ ] 收集Offer\n\n#### 4-5月：Offer分析\n创建对比表格：\n| Offer名称 | 城市 | 薪资 | 发展空间 | 工作强度 | 综合评分 |\n|-----------|------|------|----------|----------|----------|\n| Offer A | 北京 | 18k | ⭐⭐⭐⭐ | ⭐⭐⭐ | 85 |\n| Offer B | 上海 | 20k | ⭐⭐⭐ | ⭐⭐ | 78 |\n| Offer C | 成都 | 15k | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 90 |\n\n#### 6月：最终决策\n- [ ] 根据综合评分选择Offer\n- [ ] 签订三方协议\n- [ ] 准备入职材料\n\n---\n\n## 📊 进度跟踪表\n\n| 月份 | 目标 | 完成度 | 备注 |\n|------|------|--------|------|\n| 3月 | 方向确定 | ✅ 100% | 已完成 |\n| 4月 | Excel学习 | 🔄 60% | 进行中 |\n| 5月 | Python学习 | ⬜ 0% | 待开始 |\n| 6月 | 实习投递 | ⬜ 0% | 待开始 |\n| 7-8月 | 暑期实习 | ⬜ 0% | 待开始 |\n| 9-10月 | 秋招准备 | ⬜ 0% | 待开始 |\n| 11-12月 | 面试冲刺 | ⬜ 0% | 待开始 |\n| 1-3月 | 春招 | ⬜ 0% | 待开始 |\n| 4-5月 | Offer选择 | ⬜ 0% | 待开始 |\n| 6月 | 确定去向 | ⬜ 0% | 待开始 |\n\n## 🔔 重要提醒\n\n1. **定期复盘**：每月底回顾当月完成情况，及时调整计划\n2. **保持沟通**：定期与老师、学长交流，获取最新信息\n3. **心态调整**：遇到挫折是正常的，保持积极心态\n4. **灵活调整**：根据实际情况灵活调整计划，不要死板执行\n\n## 🎯 成功标准\n\n- ✅ 获得至少2个满意的Offer\n- ✅ 找到与自己的价值观匹配的工作\n- ✅ 建立清晰的职业发展路径\n- ✅ 提升个人核心竞争力和综合能力\n\n---\n\n**最后的话**：\n> \"成功不是终点，而是一段旅程。享受这个过程，相信自己的选择，勇敢地迈出每一步！\"\n`;
+
+    // 初始化代码高亮
+    hljs.highlightAll();
+
+    // 解析并渲染Markdown内容
+    function renderMarkdownContent() {
+      try {
+        // 配置marked选项
+        marked.setOptions({
+          breaks: true,  // 支持换行
+          gfm: true,     // GitHub风格Markdown
+          highlight: function(code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+              return hljs.highlight(code, { language: lang }).value;
+            }
+            return hljs.highlightAuto(code).value;
+          }
+        });
+
+        // 渲染就业市场分析
+        const analysisElement = document.getElementById('employment-analysis');
+        if (analysisElement) {
+          analysisElement.innerHTML = marked.parse(employmentAnalysisMarkdown);
+        }
+
+        // 渲染个性化建议
+        const recommendationsElement = document.getElementById('recommendations');
+        if (recommendationsElement) {
+          recommendationsElement.innerHTML = marked.parse(recommendationsMarkdown);
+        }
+
+        // 渲染行动计划
+        const actionPlanElement = document.getElementById('action-plan');
+        if (actionPlanElement) {
+          actionPlanElement.innerHTML = marked.parse(actionPlanMarkdown);
+        }
+      } catch (error) {
+        console.error('Markdown渲染错误:', error);
+      }
+    }
+
+    // 页面加载动画
+    document.addEventListener('DOMContentLoaded', function() {
+      // 先渲染Markdown内容
+      renderMarkdownContent();
+      
+      // 为所有section添加观察器，实现滚动显示效果
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.section').forEach((section, index) => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = `all 0.6s ease ${index * 0.1}s`;
+        observer.observe(section);
+      });
+    });
+
+    // 技能条动画
+    window.addEventListener('load', function() {
+      const skillBars = document.querySelectorAll('.skill-bar-fill');
+      skillBars.forEach((bar, index) => {
+        setTimeout(() => {
+          const width = bar.style.width;
+          bar.style.width = '0%';
+          setTimeout(() => {
+            bar.style.width = width;
+          }, 100);
+        }, index * 200);
+      });
+    });
+  </script>
+</body>
+</html>

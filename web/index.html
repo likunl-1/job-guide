@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就业指导助手 - AI职业咨询</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">💼</span>
+                <h1>就业指导助手</h1>
+            </div>
+            <p class="subtitle">AI驱动的职业咨询与就业市场分析</p>
+        </header>
+
+        <!-- 聊天区域 -->
+        <div class="chat-container" id="chatContainer">
+            <!-- 欢迎消息 -->
+            <div class="message ai-message">
+                <div class="message-content">
+                    <div class="avatar ai-avatar">AI</div>
+                    <div class="message-bubble">
+                        <p>你好！我是就业指导助手 👋</p>
+                        <p>我可以帮你：</p>
+                        <ul>
+                            <li>🔍 搜索就业市场信息</li>
+                            <li>📊 分析行业趋势和薪资水平</li>
+                            <li>👤 生成个性化职业建议</li>
+                        </ul>
+                        <p>请问你想了解哪个方向？</p>
+                        <p class="suggestions">
+                            <span class="suggestion-chip" onclick="sendSuggestion('我想了解前端开发的就业市场')">前端开发就业市场</span>
+                            <span class="suggestion-chip" onclick="sendSuggestion('分析Java开发的岗位需求')">Java岗位需求</span>
+                            <span class="suggestion-chip" onclick="sendSuggestion('我是计算机专业应届生，会Python，想找工作')">应届生求职建议</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea
+                    id="messageInput"
+                    placeholder="输入你的问题... (按 Enter 发送)"
+                    rows="1"
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    <span class="send-icon">发送</span>
+                </button>
+            </div>
+            <div class="input-hint">支持查询就业市场、分析个人情况、获取求职建议</div>
+        </div>
+
+        <!-- 加载动画 -->
+        <div class="typing-indicator" id="typingIndicator" style="display: none;">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

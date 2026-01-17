@@ -1,0 +1,11 @@
+[phases.build]
+cmd = "pip install -r requirements.txt"
+
+[phases.start]
+cmd = "python src/main.py -m http -p 8000"
+
+[static]
+# 不需要静态文件阶段，因为FastAPI已经内置了
+
+[variables]
+PYTHONUNBUFFERED = "1"

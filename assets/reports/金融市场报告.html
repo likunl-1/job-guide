@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>金融行业就业报告 - 就业指导 AI Agent</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- ECharts 图表库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+  <!-- WordCloud2 词云库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+
+    :root {
+      --neon-blue: #00f0ff;
+      --neon-purple: #b967ff;
+      --dark-bg: #0a0a14;
+      --card-bg: rgba(18, 18, 32, 0.7);
+      --text: #e0e0ff;
+      --border-glow: rgba(185, 103, 255, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: var(--text);
+      font-family: 'Noto Sans SC', sans-serif;
+      line-height: 1.8;
+      padding: 20px;
+    }
+
+    .report-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* 报告头部 */
+    .report-header {
+      text-align: center;
+      padding: 60px 0 40px;
+      border-bottom: 2px solid var(--border-glow);
+      margin-bottom: 40px;
+    }
+
+    .report-header h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .report-meta {
+      color: #a0a0d0;
+      font-size: 0.95rem;
+    }
+
+    .report-meta span {
+      margin: 0 20px;
+    }
+
+    /* 章节 */
+    .section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      color: var(--neon-blue);
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--neon-purple);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .section-title i {
+      font-size: 1.5rem;
+    }
+
+    /* 用户画像 */
+    .user-profile {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .profile-item {
+      background: rgba(30, 30, 50, 0.6);
+      padding: 24px;
+      border-radius: 12px;
+      border-left: 3px solid var(--neon-blue);
+    }
+
+    .profile-item h4 {
+      color: var(--neon-blue);
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .profile-item p {
+      color: #c0c0e0;
+      font-size: 0.95rem;
+    }
+
+    /* 数据卡片 */
+    .data-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .data-card {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(185, 103, 255, 0.1));
+      border: 1px solid rgba(185, 103, 255, 0.3);
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .data-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--neon-blue);
+    }
+
+    .data-card .value {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .data-card .label {
+      color: #a0a0d0;
+      font-size: 0.95rem;
+    }
+
+    /* 图表容器 */
+    .chart-container {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    .chart-title {
+      color: #c0c0e0;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .chart-box {
+      width: 100%;
+      height: 400px;
+      position: relative;
+    }
+
+    /* 词云 */
+    .wordcloud-container {
+      background: rgba(10, 10, 20, 0.8);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(48, 54, 61, 0.8);
+    }
+
+    #wordcloud {
+      width: 100%;
+      height: 400px;
+      position: relative;
+    }
+
+    /* 建议 */
+    .recommendation-list {
+      list-style: none;
+    }
+
+    .recommendation-list li {
+      background: rgba(30, 30, 50, 0.5);
+      margin-bottom: 16px;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid var(--neon-purple);
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .recommendation-list li i {
+      color: var(--neon-purple);
+      font-size: 1.3rem;
+      margin-top: 3px;
+    }
+
+    .recommendation-content h5 {
+      color: var(--neon-blue);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .recommendation-content p {
+      color: #c0c0e0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* 心理疏导 */
+    .counseling-box {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(185, 103, 255, 0.08));
+      border: 2px solid rgba(185, 103, 255, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .counseling-box i {
+      font-size: 3rem;
+      color: var(--neon-purple);
+      margin-bottom: 20px;
+    }
+
+    .counseling-box h4 {
+      color: var(--neon-blue);
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+
+    .counseling-box p {
+      color: #c0c0e0;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    /* 技能雷达图 */
+    .skill-radar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-around;
+    }
+
+    .skill-item {
+      text-align: center;
+    }
+
+    .skill-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(var(--neon-blue) 0deg, var(--neon-blue) var(--percentage), rgba(48, 54, 61, 0.8) var(--percentage), rgba(48, 54, 61, 0.8) 360deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      position: relative;
+    }
+
+    .skill-circle::before {
+      content: '';
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: var(--card-bg);
+      border-radius: 50%;
+    }
+
+    .skill-circle span {
+      position: relative;
+      z-index: 1;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--neon-blue);
+    }
+
+    .skill-label {
+      color: #c0c0e0;
+      font-size: 0.9rem;
+    }
+
+    /* 时间轴 */
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--neon-blue), var(--neon-purple));
+    }
+
+    .timeline-item {
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      background: var(--neon-blue);
+      border-radius: 50%;
+      border: 3px solid var(--dark-bg);
+      box-shadow: 0 0 10px var(--neon-blue);
+    }
+
+    .timeline-item h5 {
+      color: var(--neon-purple);
+      font-size: 1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .timeline-item p {
+      color: #b0b0d0;
+      font-size: 0.92rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .report-header h1 {
+        font-size: 2rem;
+      }
+      .section {
+        padding: 24px;
+      }
+      .user-profile {
+        grid-template-columns: 1fr;
+      }
+      .report-meta span {
+        display: block;
+        margin: 8px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <!-- 报告头部 -->
+    <div class="report-header">
+      <h1><i class="fas fa-coins"></i> 金融行业就业分析报告</h1>
+      <div class="report-meta">
+        <span><i class="fas fa-user"></i> 用户：某高校金融工程专业学生</span>
+        <span><i class="fas fa-calendar"></i> 报告时间：2025年1月</span>
+        <span><i class="fas fa-map-marker-alt"></i> 目标地区：一线城市</span>
+        <span><i class="fas fa-briefcase"></i> 目标职位：量化研究员 / 风险分析师</span>
+      </div>
+    </div>
+
+    <!-- 心理疏导 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-heart"></i> 情绪识别与疏导
+      </div>
+      <div class="counseling-box">
+        <i class="fas fa-brain"></i>
+        <h4>我理解你的焦虑</h4>
+        <p>
+          通过对话，我感受到你对当前经济环境和就业形势的担忧。这是非常正常的反应。
+          <br><br>
+          让我们用历史数据来看待这个问题：<strong>2008年金融危机后，IT行业成为经济增长引擎；2020年疫情后，数字化转型加速。</strong>
+          每次危机都孕育着新的机会。
+          <br><br>
+          <strong>你现在最需要做的不是担心，而是提升自己，抓住下一个机会。</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- 用户画像 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-user-circle"></i> 用户画像分析
+      </div>
+      <div class="user-profile">
+        <div class="profile-item">
+          <h4><i class="fas fa-graduation-cap"></i> 教育背景</h4>
+          <p>硕士，金融工程专业，某985/211高校</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-code"></i> 技术栈</h4>
+          <p>Python、R、SQL、MATLAB、机器学习</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-briefcase"></i> 实习经验</h4>
+          <p>2次实习经历，券商研究所、量化私募</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-star"></i> 兴趣方向</h4>
+          <p>量化投资、风险管理、资产定价</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-map"></i> 期望工作地</h4>
+          <p>上海、北京、深圳</p>
+        </div>
+        <div class="profile-item">
+          <h4><i class="fas fa-coins"></i> 薪资预期</h4>
+          <p>20k-30k / 月</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 市场概况 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-chart-bar"></i> 金融行业就业市场概况
+      </div>
+      <div class="data-cards">
+        <div class="data-card">
+          <div class="value">1.8万+</div>
+          <div class="label">月度新增职位</div>
+        </div>
+        <div class="data-card">
+          <div class="value">¥25.8k</div>
+          <div class="label">平均薪资</div>
+        </div>
+        <div class="data-card">
+          <div class="value">72%</div>
+          <div class="label">招聘成功率</div>
+        </div>
+        <div class="data-card">
+          <div class="value">22.5k</div>
+          <div class="label">薪资中位数</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title"><i class="fas fa-chart-area"></i> 金融行业薪资分布图</div>
+        <div id="salaryChart" class="chart-box" style="height: 400px;"></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title"><i class="fas fa-chart-line"></i> 近6个月金融职位需求趋势</div>
+        <div id="trendChart" class="chart-box" style="height: 350px;"></div>
+      </div>
+    </div>
+
+    <!-- 技能需求词云 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-cloud"></i> 金融行业技能需求词云
+      </div>
+      <div class="wordcloud-container">
+        <canvas id="wordcloud"></canvas>
+      </div>
+    </div>
+
+    <!-- 技能匹配度 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-chart-pie"></i> 金融技能匹配度分析
+      </div>
+      <div class="skill-radar">
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 306deg;">
+            <span>85%</span>
+          </div>
+          <div class="skill-label">Python</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 288deg;">
+            <span>80%</span>
+          </div>
+          <div class="skill-label">量化建模</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 234deg;">
+            <span>65%</span>
+          </div>
+          <div class="skill-label">风险管理</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 252deg;">
+            <span>70%</span>
+          </div>
+          <div class="skill-label">数据分析</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 216deg;">
+            <span>60%</span>
+          </div>
+          <div class="skill-label">金融工程</div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-circle" style="--percentage: 270deg;">
+            <span>75%</span>
+          </div>
+          <div class="skill-label">机器学习</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个性化建议 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-lightbulb"></i> 个性化建议
+      </div>
+      <ul class="recommendation-list">
+        <li>
+          <i class="fas fa-bullseye"></i>
+          <div class="recommendation-content">
+            <h5>职位方向推荐</h5>
+            <p>基于你的背景和市场需求，推荐以下方向：<strong>量化研究员（优先）</strong>、<strong>风险管理分析师</strong>、<strong>资产定价工程师</strong>。你的金融工程背景扎实，量化实习经验丰富，非常适合量化研究岗位。</p>
+          </div>
+        </li>
+        <li>
+          <i class="fas fa-graduation-cap"></i>
+          <div class="recommendation-content">
+            <h5>技能提升路径</h5>
+            <p><strong>短期（1-2个月）</strong>：深入掌握多因子模型构建，完成2-3个量化回测项目，上传至GitHub。<br>
+            <strong>中期（3-6个月）</strong>：学习深度学习在金融中的应用，掌握强化学习交易策略。<br>
+            <strong>长期（6个月+）</strong>：深入学习衍生品定价、风险管理模型，了解高频交易技术。</p>
+          </div>
+        </li>
+        <li>
+          <i class="fas fa-file-alt"></i>
+          <div class="recommendation-content">
+            <h5>简历优化建议</h5>
+            <p>突出你的<strong>量化研究项目</strong>，用STAR法则描述策略成果（情境-任务-行动-结果）。量化你的策略收益，如"构建多因子选股模型，年化收益率18%，夏普比率1.8"。添加技术栈关键词：Python、量化建模、机器学习、风险管理等，便于ATS系统筛选。</p>
+          </div>
+        </li>
+        <li>
+          <i class="fas fa-handshake"></i>
+          <div class="recommendation-content">
+            <h5>求职策略指导</h5>
+            <p><strong>投递策略</strong>：重点关注券商资管、量化私募、银行金融市场部。<br>
+            <strong>面试准备</strong>：准备量化面试题（概率论、统计学、衍生品定价），熟悉常见的量化策略类型。<br>
+            <strong>薪资谈判</strong>：基于市场平均薪资25.8k，结合你的能力，合理预期20k-30k，可根据公司Offer调整。</p>
+          </div>
+        </li>
+        <li>
+          <i class="fas fa-coins"></i>
+          <div class="recommendation-content">
+            <h5>薪资预期分析</h5>
+            <p>根据市场数据：<br>
+            - <strong>初级量化研究员</strong>：15k-20k（40%职位）<br>
+            - <strong>中级量化研究员</strong>：20k-30k（35%职位）<br>
+            - <strong>高级量化研究员</strong>：30k-50k（20%职位）<br>
+            - <strong>量化负责人</strong>：50k+（5%职位）<br>
+            你的定位是初级偏中级，<strong>建议薪资范围20k-28k</strong>较为合理。</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 行动计划 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-tasks"></i> 求职行动计划
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h5>第1-2周：简历优化 + 项目准备</h5>
+          <p>优化简历，梳理量化实习项目，准备2-3个量化策略回测案例</p>
+        </div>
+        <div class="timeline-item">
+          <h5>第3-4周：技术复习 + 面试准备</h5>
+          <p>复习概率论与数理统计，准备量化面试题，练习Python编程</p>
+        </div>
+        <div class="timeline-item">
+          <h5>第5-8周：投递简历 + 面试</h5>
+          <p>开始投递简历，重点关注券商和量化私募，每周投递30-50份</p>
+        </div>
+        <div class="timeline-item">
+          <h5>第9-12周：跟进 + Offer选择</h5>
+          <p>跟进面试反馈，对比Offer，选择最适合的职位</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 行业趋势 -->
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-chart-line"></i> 金融行业趋势预测
+      </div>
+      <div style="color: #c0c0e0; line-height: 1.8;">
+        <p style="margin-bottom: 16px;"><strong><i class="fas fa-arrow-up" style="color: var(--neon-blue);"></i> 上升趋势：</strong></p>
+        <ul style="margin-left: 20px; color: #a0a0d0;">
+          <li style="margin-bottom: 10px;">量化投资与算法交易：市场成熟度提升，需求持续增长</li>
+          <li style="margin-bottom: 10px;">金融科技（FinTech）：数字化转型驱动，新兴领域机会多</li>
+          <li style="margin-bottom: 10px;">风险管理：监管趋严，专业风控人才需求增加</li>
+          <li style="margin-bottom: 10px;">ESG投资：可持续发展理念兴起，新兴赛道</li>
+        </ul>
+
+        <p style="margin: 24px 0 16px;"><strong><i class="fas fa-minus" style="color: var(--neon-purple);"></i> 稳定趋势：</strong></p>
+        <ul style="margin-left: 20px; color: #a0a0d0;">
+          <li style="margin-bottom: 10px;">传统投行/券商：需求稳定但竞争激烈</li>
+          <li style="margin-bottom: 10px;">商业银行：基础岗位稳定，需向数字化方向转型</li>
+        </ul>
+
+        <p style="margin: 24px 0 16px;"><strong><i class="fas fa-arrow-down" style="color: #ff6b6b;"></i> 需注意：</strong></p>
+        <ul style="margin-left: 20px; color: #a0a0d0;">
+          <li>传统柜员/前台：需求下降，建议谨慎选择</li>
+          <li>传统信贷：受政策影响，波动较大</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 总结 -->
+    <div class="section" style="text-align: center; background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(185, 103, 255, 0.08));">
+      <i class="fas fa-trophy" style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 20px;"></i>
+      <h3 style="color: var(--neon-purple); font-size: 1.5rem; margin-bottom: 20px; font-family: 'Orbitron', monospace;">总结</h3>
+      <p style="color: #c0c0e0; font-size: 1.1rem; line-height: 1.9; max-width: 800px; margin: 0 auto;">
+        你具备<strong>扎实的金融工程基础</strong>和<strong>量化实习经验</strong>，在量化研究和风险管理两个方向都有不错的发展潜力。
+        <br><br>
+        当前金融科技需求<strong>稳步增长</strong>，量化投资成为热门赛道，你的技能匹配度较高。
+        <br><br>
+        <strong>最关键的是行动</strong>：按照行动计划，持续优化简历、准备量化面试，你一定能找到理想的工作！
+        <br><br>
+        <strong>加油！未来可期！</strong>
+      </p>
+    </div>
+
+    <!-- 页脚 -->
+    <div style="text-align: center; padding: 40px 0; color: #7070a0; font-size: 0.9rem; border-top: 1px solid var(--border-glow);">
+      <p>本报告由就业指导 AI Agent 自动生成</p>
+      <p>数据来源：金融行业招聘平台公开数据 | 报告生成时间：2025年1月</p>
+      <p style="margin-top: 10px;">⚠️ 本报告仅供参考，实际结果可能因个人情况和市场变化而异</p>
+    </div>
+  </div>
+
+  <script>
+    // 初始化代码高亮
+    hljs.highlightAll();
+
+    // 绘制薪资分布图
+    const salaryChart = echarts.init(document.getElementById('salaryChart'));
+    const salaryOption = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: ['15k以下', '15-20k', '20-25k', '25-30k', '30k+'],
+        axisLabel: {
+          color: '#a0a0d0',
+          fontSize: 13
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#30363d'
+          }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        name: '职位数量(个)',
+        nameTextStyle: {
+          color: '#a0a0d0',
+          padding: [0, 0, 0, -50]
+        },
+        axisLabel: {
+          color: '#a0a0d0'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#30363d'
+          }
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(48, 54, 61, 0.3)'
+          }
+        }
+      },
+      series: [{
+        name: '职位数量',
+        type: 'bar',
+        data: [2400, 3800, 5400, 4600, 1800],
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [{
+              offset: 0,
+              color: '#b967ff'
+            }, {
+              offset: 1,
+              color: '#00f0ff'
+            }]
+          }
+        },
+        label: {
+          show: true,
+          position: 'top',
+          color: '#c0c0e0'
+        }
+      }]
+    };
+    salaryChart.setOption(salaryOption);
+
+    // 绘制趋势图
+    const trendChart = echarts.init(document.getElementById('trendChart'));
+    const trendOption = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis'
+      },
+      legend: {
+        data: ['职位数量', '平均薪资'],
+        textStyle: {
+          color: '#c0c0e0'
+        },
+        top: 5
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ['8月', '9月', '10月', '11月', '12月', '1月'],
+        axisLabel: {
+          color: '#a0a0d0'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#30363d'
+          }
+        }
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '职位数量(个)',
+          position: 'left',
+          axisLabel: {
+            color: '#a0a0d0'
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#30363d'
+            }
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(48, 54, 61, 0.3)'
+            }
+          }
+        },
+        {
+          type: 'value',
+          name: '平均薪资(k)',
+          position: 'right',
+          axisLabel: {
+            color: '#a0a0d0'
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#30363d'
+            }
+          },
+          splitLine: {
+            show: false
+          }
+        }
+      ],
+      series: [
+        {
+          name: '职位数量',
+          type: 'line',
+          smooth: true,
+          data: [15800, 16500, 17100, 17800, 18200, 18500],
+          itemStyle: {
+            color: '#00f0ff'
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0,
+                color: 'rgba(0, 240, 255, 0.3)'
+              }, {
+                offset: 1,
+                color: 'rgba(0, 240, 255, 0)'
+              }]
+            }
+          }
+        },
+        {
+          name: '平均薪资',
+          type: 'line',
+          yAxisIndex: 1,
+          smooth: true,
+          data: [24.2, 24.5, 24.8, 25.1, 25.5, 25.8],
+          itemStyle: {
+            color: '#b967ff'
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0,
+                color: 'rgba(185, 103, 255, 0.3)'
+              }, {
+                offset: 1,
+                color: 'rgba(185, 103, 255, 0)'
+              }]
+            }
+          }
+        }
+      ]
+    };
+    trendChart.setOption(trendOption);
+
+    // 生成词云
+    const wordcloudCanvas = document.getElementById('wordcloud');
+    const wordlist = [
+      ['量化研究', 60],
+      ['Python', 55],
+      ['风险管理', 50],
+      ['机器学习', 48],
+      ['算法交易', 45],
+      ['数据分析', 42],
+      ['资产定价', 40],
+      ['衍生品', 38],
+      ['MATLAB', 35],
+      ['金融建模', 33],
+      ['投资组合', 30],
+      ['回测系统', 28],
+      ['统计学', 26],
+      ['概率论', 25],
+      ['时间序列', 24],
+      ['SQL', 22],
+      ['期权定价', 20],
+      ['高频交易', 18],
+      ['深度学习', 17],
+      ['强化学习', 16],
+      ['量化策略', 15],
+      ['多因子模型', 14],
+      ['VaR', 13],
+      ['Black-Scholes', 12],
+      ['蒙特卡洛', 11],
+      ['神经网络', 10],
+      ['大数据', 9],
+      ['ESG', 8],
+      ['金融科技', 7],
+      ['区块链', 6]
+    ];
+
+    WordCloud(wordcloudCanvas, {
+      list: wordlist,
+      gridSize: 8,
+      weightFactor: 1.8,
+      fontFamily: 'Noto Sans SC, sans-serif',
+      color: function() {
+        const colors = ['#00f0ff', '#b967ff', '#7c3aed', '#06b6d4', '#8b5cf6'];
+        return colors[Math.floor(Math.random() * colors.length)];
+      },
+      rotateRatio: 0.4,
+      backgroundColor: 'transparent',
+      drawOutOfBound: false,
+      shrinkToFit: true
+    });
+
+    // 添加动画效果
+    document.addEventListener('DOMContentLoaded', () => {
+      // 技能圈动画
+      const skillCircles = document.querySelectorAll('.skill-circle');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const circle = entry.target;
+            const percentage = circle.style.getPropertyValue('--percentage');
+            circle.style.transition = 'all 1s ease-out';
+            circle.style.setProperty('--percentage', percentage);
+            observer.unobserve(circle);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      skillCircles.forEach(circle => {
+        const finalPercentage = circle.style.getPropertyValue('--percentage');
+        circle.style.setProperty('--percentage', '0deg');
+        observer.observe(circle);
+      });
+
+      // 响应式图表
+      window.addEventListener('resize', () => {
+        salaryChart.resize();
+        trendChart.resize();
+      });
+    });
+  </script>
+</body>
+</html>

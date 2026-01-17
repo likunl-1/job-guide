@@ -1,0 +1,55 @@
+# 招聘数据API配置示例
+# 复制此文件为 recruitment_api_config.yml 并填入真实的API信息
+
+# ===== Boss直聘API配置（示例）=====
+boss_zhipin:
+  enabled: false  # 是否启用
+  api_key: "your_boss_api_key_here"  # 在Boss直聘开放平台申请
+  endpoint: "https://api.zhipin.com/job/search"  # 实际API端点
+  rate_limit: 100  # 每分钟最大请求数
+  description: "Boss直聘开放平台API"
+
+# ===== 拉勾网API配置（示例）=====
+lagou:
+  enabled: false
+  api_key: "your_lagou_api_key_here"
+  endpoint: "https://www.lagou.com/api"
+  rate_limit: 50
+  description: "拉勾网企业API（需企业资质）"
+
+# ===== 猎聘API配置（示例）=====
+liepin:
+  enabled: false
+  api_key: "your_liepin_api_key_here"
+  endpoint: "https://api.liepin.com"
+  rate_limit: 80
+  description: "猎聘开放平台API"
+
+# ===== 第三方数据服务配置（示例）=====
+third_party:
+  enabled: false
+  api_key: "your_third_party_key_here"
+  endpoint: "https://data-service.example.com/jobs"
+  description: "第三方招聘数据聚合服务"
+
+# ===== 通用配置 =====
+common:
+  # 默认使用的数据源（当多个API都启用时）
+  default_source: "boss_zhipin"
+
+  # 缓存配置（减少API调用次数）
+  cache_enabled: true
+  cache_ttl: 3600  # 缓存时间（秒），1小时
+
+  # 超时配置
+  request_timeout: 10  # API请求超时时间（秒）
+
+  # 重试配置
+  max_retries: 3
+  retry_delay: 2  # 重试间隔（秒）
+
+# ===== 注意事项 =====
+# 1. API Key和Secret请妥善保管，不要提交到代码仓库
+# 2. 不同的API有不同的申请条件和费用
+# 3. 建议先申请测试环境API进行开发
+# 4. 部分API可能需要企业资质或通过审核
